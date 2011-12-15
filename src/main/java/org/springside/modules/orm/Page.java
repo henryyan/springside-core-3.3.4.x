@@ -7,7 +7,9 @@
  */
 package org.springside.modules.orm;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -33,7 +35,7 @@ public class Page<T> {
 	protected String orderBy = null;
 	protected String order = null;
 	protected boolean autoCount = true;
-	
+
 	//-- jqGrid参数 --//
 	protected String search;
 	protected GridFilter filters = new GridFilter();
@@ -41,6 +43,8 @@ public class Page<T> {
 	//-- 返回结果 --//
 	protected List<T> result = Lists.newArrayList();
 	protected long totalCount = -1;
+	// 附加信息
+	protected Map<String, Object> attachValues = new HashMap<String, Object>();
 
 	//-- 构造函数 --//
 	public Page() {
@@ -273,7 +277,7 @@ public class Page<T> {
 			return pageNo;
 		}
 	}
-	
+
 	/**
 	 * 是否查询
 	 * @return
@@ -297,4 +301,13 @@ public class Page<T> {
 	public void setFilters(GridFilter filters) {
 		this.filters = filters;
 	}
+
+	public Map<String, Object> getAttachValues() {
+		return attachValues;
+	}
+
+	public void setAttachValues(Map<String, Object> attachValues) {
+		this.attachValues = attachValues;
+	}
+
 }
