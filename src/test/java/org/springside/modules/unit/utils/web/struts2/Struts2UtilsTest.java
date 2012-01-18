@@ -69,14 +69,14 @@ public class Struts2UtilsTest {
 		WebTestUtils.setResponseToStruts2(response);
 		Object object = new TestBean();
 		Struts2Utils.renderJson(object);
-		assertEquals("{\"age\":10,\"name\":\"foo\"}", response.getContentAsString());
+		assertEquals("{\"name\":\"foo\",\"age\":10}", response.getContentAsString());
 
 		//Array
 		response = new MockHttpServletResponse();
 		WebTestUtils.setResponseToStruts2(response);
 		TestBean[] array = { new TestBean(), new TestBean() };
 		Struts2Utils.renderJson(array);
-		assertEquals("[{\"age\":10,\"name\":\"foo\"},{\"age\":10,\"name\":\"foo\"}]", response.getContentAsString());
+		assertEquals("[{\"name\":\"foo\",\"age\":10},{\"name\":\"foo\",\"age\":10}]", response.getContentAsString());
 
 		//Collection
 		response = new MockHttpServletResponse();
@@ -84,7 +84,7 @@ public class Struts2UtilsTest {
 		List<TestBean> list = Lists.newArrayList(new TestBean(), new TestBean());
 
 		Struts2Utils.renderJson(list);
-		assertEquals("[{\"age\":10,\"name\":\"foo\"},{\"age\":10,\"name\":\"foo\"}]", response.getContentAsString());
+		assertEquals("[{\"name\":\"foo\",\"age\":10},{\"name\":\"foo\",\"age\":10}]", response.getContentAsString());
 	}
 
 	@Test
