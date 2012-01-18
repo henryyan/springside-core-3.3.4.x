@@ -11,6 +11,12 @@
 	<packaging>jar</packaging>
 	<name>Springside3's Core Module</name>
 	<version>3.3.4.2-SNAPSHOT</version>
+	
+	<scm>
+		<connection>scm:git:git@github.com:henryyan/springside-core-3.3.4.x.git</connection>
+		<url>scm:git:git@github.com:henryyan/springside-core-3.3.4.x.git</url>
+		<developerConnection>scm:git:git@github.com:henryyan/springside-core-3.3.4.x.git</developerConnection>
+	</scm>
 
 	<!-- 设定团队持续集成发布包服务器 -->
 	<distributionManagement>
