@@ -383,6 +383,9 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 		case EQ:
 			criterion = Restrictions.eq(propertyName, propertyValue);
 			break;
+		case NE:
+			criterion = Restrictions.ne(propertyName, propertyValue);
+			break;
 		case LIKE:
 			criterion = Restrictions.like(propertyName, (String) propertyValue, MatchMode.ANYWHERE);
 			break;
