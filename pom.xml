@@ -9,7 +9,7 @@
 	<artifactId>springside3-core</artifactId>
 	<packaging>jar</packaging>
 	<name>Springside3's Core Module</name>
-	<version>3.3.4.3-SNAPSHOT</version>
+	<version>3.3.4.3</version>
 	
 	<scm>
 		<connection>scm:git:git@github.com:henryyan/springside-core-3.3.4.x.git</connection>
