@@ -47,12 +47,12 @@ import org.springside.modules.utils.reflection.ReflectionUtils;
  * @author calvin
  */
 public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao<T, PK> {
-	
+
 	/**
 	 *	保存对象别名，以免重复添加导致Hibernate报异常.
 	 */
 	Set<String> aliases = new HashSet<String>();
-	
+
 	/**
 	 * 用于Dao层子类的构造函数.
 	 * 通过子类的泛型定义取得对象类型Class.
@@ -108,6 +108,45 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 		List result = q.list();
 		page.setResult(result);
 		return page;
+	}
+
+	/**
+	 * 按HQL分页查询.
+	 * 
+	 * @param page 分页参数. 注意不支持其中的orderBy参数.
+	 * @param hql hql语句.
+	 * @param values 数量可变的查询参数,按顺序绑定.
+	 * 
+	 * @return 分页查询结果, 附带结果列表及所有查询输入参数.
+	 */
+	@SuppressWarnings("unchecked")
+	public Page<Object> findPageForObject(Page<Object> page, final String hql, final Object... values) {
+		Assert.notNull(page, "page不能为空");
+
+		Query q = createQuery(hql, values);
+
+		if (page.isAutoCount()) {
+			long totalCount = countHqlResult(hql, values);
+			page.setTotalCount(totalCount);
+		}
+
+		setPageParameterToQueryForObject(q, page);
+
+		List<Object> result = q.list();
+		page.setResult(result);
+		return page;
+	}
+
+	/**
+	 * 设置分页参数到Query对象,辅助函数.
+	 */
+	private void setPageParameterToQueryForObject(Query q, Page<Object> page) {
+
+		Assert.isTrue(page.getPageSize() > 0, "Page Size must larger than zero");
+
+		//hibernate的firstResult的序号从0开始
+		q.setFirstResult(page.getFirst() - 1);
+		q.setMaxResults(page.getPageSize());
 	}
 
 	/**
@@ -321,12 +360,12 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 		Criterion[] criterions = buildCriterionByPropertyFilter(filters);
 		return findPage(page, criterions);
 	}*/
-	
+
 	/**
 	 * 按属性过滤条件列表分页查找对象.
 	 * 添加了关联查询和关联排序功能 add by henryyan.
 	 */
-	@SuppressWarnings( { "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Page<T> findPage(final Page<T> page, final List<PropertyFilter> filters) {
 		Assert.notNull(page, "page不能为空");
 		DetachedCriteria dc = buildPropertyFilterDetachedCriteria(filters);
@@ -341,7 +380,7 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 		page.setResult(result);
 		return page;
 	}
-	
+
 	protected DetachedCriteria buildPropertyFilterDetachedCriteria(final List<PropertyFilter> filters) {
 		DetachedCriteria dc = DetachedCriteria.forClass(entityClass);
 		for (PropertyFilter filter : filters) {
@@ -418,8 +457,7 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 		List<Criterion> criterionList = new ArrayList<Criterion>();
 		for (PropertyFilter filter : filters) {
 			if (!filter.hasMultiProperties()) { //只有一个属性需要比较的情况.
-				Criterion criterion = buildCriterion(filter.getPropertyName(), filter.getMatchValue(),
-						filter.getMatchType());
+				Criterion criterion = buildCriterion(filter.getPropertyName(), filter.getMatchValue(), filter.getMatchType());
 				criterionList.add(criterion);
 			} else {//包含多个属性需要比较的情况,进行or处理.
 				Disjunction disjunction = Restrictions.disjunction();
