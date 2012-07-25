@@ -288,7 +288,12 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 		fromHql = "from " + StringUtils.substringAfter(fromHql, "from");
 		fromHql = StringUtils.substringBefore(fromHql, "order by");
 
-		String countHql = "select count(*) " + fromHql;
+		String countHql = "";
+		if (orgHql.indexOf("distinct") != -1) {
+			countHql = "select count(distinct o) " + fromHql;
+		} else {
+			countHql = "select count(o) " + fromHql;
+		}
 		return countHql;
 	}
 
