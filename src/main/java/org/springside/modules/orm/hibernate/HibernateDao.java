@@ -8,11 +8,14 @@
 package org.springside.modules.orm.hibernate;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.persistence.EmbeddedId;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
@@ -51,7 +54,7 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	/**
 	 *	保存对象别名，以免重复添加导致Hibernate报异常.
 	 */
-	Set<String> aliases = new HashSet<String>();
+	protected Set<String> aliases = new HashSet<String>();
 
 	/**
 	 * 用于Dao层子类的构造函数.
@@ -380,7 +383,7 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 			page.setTotalCount(totalCount);
 		}
 		setPageParameterToCriteria(c, page);
-		aliases = new HashSet<String>();
+
 		List result = c.list();
 		page.setResult(result);
 		return page;
@@ -388,23 +391,37 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 
 	protected DetachedCriteria buildPropertyFilterDetachedCriteria(final List<PropertyFilter> filters) {
 		DetachedCriteria dc = DetachedCriteria.forClass(entityClass);
+
 		for (PropertyFilter filter : filters) {
 			if (!filter.hasMultiProperties()) {
 				if (filter.getPropertyName().contains(".")) {
 					String alias = StringUtils.substringBefore(filter.getPropertyName(), ".");
-					if (!aliases.contains(alias)) {
-						dc.createAlias(alias, alias, CriteriaSpecification.LEFT_JOIN); //默认用left join
-						aliases.add(alias);
+					String newAlias = alias.substring(0, 1).toUpperCase() + alias.substring(1);
+					Method method = ReflectionUtils.getAccessibleMethod(entityClass, "get" + newAlias);
+					EmbeddedId embeddedId = method.getAnnotation(EmbeddedId.class);
+					
+					// 忽略联合主键
+					if (embeddedId != null) {
+						continue;
 					}
+					dc.createAlias(alias, alias, CriteriaSpecification.LEFT_JOIN); //默认用left join
+					aliases.add(alias);
 				}
-			} else { //含有or的情况
+			} else {
+				//含有or的情况
 				for (String propertyName : filter.getPropertyNames()) {
 					if (propertyName.contains(".")) {
 						String alias = StringUtils.substringBefore(filter.getPropertyName(), ".");
-						if (!aliases.contains(alias)) {
-							dc.createAlias(alias, alias, CriteriaSpecification.LEFT_JOIN);
-							aliases.add(alias);
+						String newAlias = alias.substring(0, 1).toUpperCase() + alias.substring(1);
+						Method method = ReflectionUtils.getAccessibleMethod(entityClass, "get" + newAlias);
+						
+						// 忽略联合主键
+						EmbeddedId embeddedId = method.getAnnotation(EmbeddedId.class);
+						if (embeddedId != null) {
+							continue;
 						}
+						dc.createAlias(alias, alias, CriteriaSpecification.LEFT_JOIN);
+						aliases.add(alias);
 					}
 				}
 			}
