@@ -153,6 +153,31 @@ public class ReflectionUtils {
 		}
 		return null;
 	}
+	
+	/**
+	 * 循环向上转型, 获取对象的DeclaredMethod,并强制设置为可访问.
+	 * 如向上转型到Object仍无法找到, 返回null.
+	 * 
+	 * 用于方法需要被多次调用的情况. 先使用本函数先取得Method,然后调用Method.invoke(Object obj, Object... args)
+	 */
+	public static Method getAccessibleMethod(final Class<?> clazz, final String methodName,
+			final Class<?>... parameterTypes) {
+		Assert.notNull(clazz, "object不能为空");
+
+		for (Class<?> superClass = clazz; superClass != Object.class; superClass = superClass.getSuperclass()) {
+			try {
+				Method method = superClass.getDeclaredMethod(methodName, parameterTypes);
+
+				method.setAccessible(true);
+
+				return method;
+
+			} catch (NoSuchMethodException e) {//NOSONAR
+				// Method不在当前类定义,继续向上转型
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * 通过反射, 获得Class定义中声明的父类的泛型参数的类型.
