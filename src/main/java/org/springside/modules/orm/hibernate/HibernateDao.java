@@ -448,7 +448,12 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 			criterion = Restrictions.ne(propertyName, propertyValue);
 			break;
 		case LIKE:
-			criterion = Restrictions.like(propertyName, (String) propertyValue, MatchMode.ANYWHERE);
+			if (propertyValue instanceof String) {
+				criterion = Restrictions.like(propertyName, (String) propertyValue, MatchMode.ANYWHERE);
+			} else {
+				logger.warn("属性{}使用LIKE查询，为非字符型，实际类型为：{}，自动使用EQ查询", propertyName, propertyValue.getClass().getName());
+				criterion = Restrictions.eq(propertyName, propertyValue);
+			}
 			break;
 		case LE:
 			criterion = Restrictions.le(propertyName, propertyValue);
