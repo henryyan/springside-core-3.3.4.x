@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +59,7 @@ public class PropertyFilter {
 
 	private MatchType matchType = null;
 	private Object matchValue = null;
+	private String originValue = null;
 
 	private Class<?> propertyClass = null;
 	private String[] propertyNames = null;
@@ -71,7 +73,7 @@ public class PropertyFilter {
 	 * @param value 待比较的值.
 	 */
 	public PropertyFilter(final String filterName, final String value) {
-
+		
 		String firstPart = StringUtils.substringBefore(filterName, "_");
 		String matchTypeCode = StringUtils.substring(firstPart, 0, firstPart.length() - 1);
 		String propertyTypeCode = StringUtils.substring(firstPart, firstPart.length() - 1, firstPart.length());
@@ -93,6 +95,7 @@ public class PropertyFilter {
 		//		propertyNames = StringUtils.splitByWholeSeparator(propertyNameStr, PropertyFilter.OR_SEPARATOR);
 		propertyNames = propertyNameStr.split(PropertyFilter.OR_SEPARATOR);
 
+		this.originValue = value;
 		this.matchValue = ConvertUtils.convertStringToObject(value, propertyClass);
 	}
 
@@ -162,6 +165,14 @@ public class PropertyFilter {
 	}
 
 	/**
+	 * 获取原始值
+	 * @return
+	 */
+	public String getOriginValue() {
+		return originValue;
+	}
+
+	/**
 	 * 获取比较属性名称列表.
 	 */
 	public String[] getPropertyNames() {
@@ -181,5 +192,21 @@ public class PropertyFilter {
 	 */
 	public boolean hasMultiProperties() {
 		return (propertyNames.length > 1);
+	}
+	
+	/**
+	 * 根据MatchType获取sql比较符号
+	 */
+	public String getSqlOper() {
+		Map<PropertyFilter.MatchType, String> types = new HashMap<PropertyFilter.MatchType, String>();
+		types.put(MatchType.EQ, "=");
+		types.put(MatchType.NE, "!=");
+		types.put(MatchType.GT, ">");
+		types.put(MatchType.LT, "<");
+		types.put(MatchType.GE, ">=");
+		types.put(MatchType.LE, "<=");
+		types.put(MatchType.IN, "is null");
+		types.put(MatchType.NN, "is not null");
+		return types.get(this.getMatchType());
 	}
 }
