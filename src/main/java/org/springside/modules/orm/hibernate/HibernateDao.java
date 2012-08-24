@@ -384,23 +384,6 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 		
 		DetachedCriteria dc = buildPropertyFilterDetachedCriteria(filters, aliases);
 		
-		if (page.isOrderBySetted()) {
-			String[] orderByArray = StringUtils.split(page.getOrderBy(), ',');
-			String[] orderArray = StringUtils.split(page.getOrder(), ',');
-
-			Assert.isTrue(orderByArray.length == orderArray.length, "分页多重排序参数中,排序字段与排序方向的个数不相等");
-
-			for (int i = 0; i < orderByArray.length; i++) {
-				if (orderByArray[i].contains(".")) {
-					String alias = StringUtils.substringBefore(orderByArray[i], ".");
-					if (!aliases.contains(alias)) {
-						dc.createAlias(alias, alias);
-						aliases.add(alias);
-					}
-				}
-			}
-		}
-		
 		Criteria c = dc.getExecutableCriteria(getSession());
 		if (page.isAutoCount()) {
 			long totalCount = countCriteriaResult(c);
