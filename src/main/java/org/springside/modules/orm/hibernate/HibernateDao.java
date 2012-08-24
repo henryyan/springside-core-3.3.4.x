@@ -52,11 +52,6 @@ import org.springside.modules.utils.reflection.ReflectionUtils;
 public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao<T, PK> {
 
 	/**
-	 *	保存对象别名，以免重复添加导致Hibernate报异常.
-	 */
-	protected Set<String> aliases = new HashSet<String>();
-
-	/**
 	 * 用于Dao层子类的构造函数.
 	 * 通过子类的泛型定义取得对象类型Class.
 	 * eg.
@@ -190,7 +185,12 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Page<T> findPage(final Page<T> page, final Criterion... criterions) {
 		Assert.notNull(page, "page不能为空");
-
+		
+		/**
+		 *	保存查询条件中对象别名，以免重复添加导致Hibernate报异常.
+		 */
+		Set<String> aliases = new HashSet<String>();
+		
 		Criteria c = createCriteria(criterions);
 
 		if (page.isAutoCount()) {
@@ -198,7 +198,7 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 			page.setTotalCount(totalCount);
 		}
 
-		setPageParameterToCriteria(c, page);
+		setPageParameterToCriteria(c, page, aliases);
 
 		List result = c.list();
 		page.setResult(result);
@@ -221,8 +221,8 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	/**
 	 * 设置分页参数到Criteria对象,辅助函数.
 	 */
-	protected Criteria setPageParameterToCriteria(final Criteria c, final Page<T> page) {
-
+	protected Criteria setPageParameterToCriteria(final Criteria c, final Page<T> page, final Set<String> aliases) {
+		
 		Assert.isTrue(page.getPageSize() > 0, "Page Size must larger than zero");
 
 		//hibernate的firstResult的序号从0开始
@@ -376,20 +376,44 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Page<T> findPage(final Page<T> page, final List<PropertyFilter> filters) {
 		Assert.notNull(page, "page不能为空");
-		DetachedCriteria dc = buildPropertyFilterDetachedCriteria(filters);
+		
+		/**
+		 *	保存查询条件中对象别名，以免重复添加导致Hibernate报异常.
+		 */
+		Set<String> aliases = new HashSet<String>();
+		
+		DetachedCriteria dc = buildPropertyFilterDetachedCriteria(filters, aliases);
+		
+		if (page.isOrderBySetted()) {
+			String[] orderByArray = StringUtils.split(page.getOrderBy(), ',');
+			String[] orderArray = StringUtils.split(page.getOrder(), ',');
+
+			Assert.isTrue(orderByArray.length == orderArray.length, "分页多重排序参数中,排序字段与排序方向的个数不相等");
+
+			for (int i = 0; i < orderByArray.length; i++) {
+				if (orderByArray[i].contains(".")) {
+					String alias = StringUtils.substringBefore(orderByArray[i], ".");
+					if (!aliases.contains(alias)) {
+						dc.createAlias(alias, alias);
+						aliases.add(alias);
+					}
+				}
+			}
+		}
+		
 		Criteria c = dc.getExecutableCriteria(getSession());
 		if (page.isAutoCount()) {
 			long totalCount = countCriteriaResult(c);
 			page.setTotalCount(totalCount);
 		}
-		setPageParameterToCriteria(c, page);
+		setPageParameterToCriteria(c, page, aliases);
 
 		List result = c.list();
 		page.setResult(result);
 		return page;
 	}
 
-	protected DetachedCriteria buildPropertyFilterDetachedCriteria(final List<PropertyFilter> filters) {
+	protected DetachedCriteria buildPropertyFilterDetachedCriteria(final List<PropertyFilter> filters, final Set<String> aliases) {
 		DetachedCriteria dc = DetachedCriteria.forClass(entityClass);
 
 		for (PropertyFilter filter : filters) {
