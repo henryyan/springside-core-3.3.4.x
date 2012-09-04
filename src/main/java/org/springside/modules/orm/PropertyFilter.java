@@ -96,7 +96,12 @@ public class PropertyFilter {
 		propertyNames = propertyNameStr.split(PropertyFilter.OR_SEPARATOR);
 
 		this.originValue = value;
-		this.matchValue = ConvertUtils.convertStringToObject(value, propertyClass);
+		
+		if (matchType.equals(MatchType.IN) || matchType.equals(MatchType.NN)) {
+			this.matchValue = null;
+		} else {
+			this.matchValue = ConvertUtils.convertStringToObject(value, propertyClass);
+		}
 	}
 
 	/**
