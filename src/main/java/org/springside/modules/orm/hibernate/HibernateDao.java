@@ -19,6 +19,7 @@ import javax.persistence.EmbeddedId;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -30,9 +31,11 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projection;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.SimpleExpression;
 import org.hibernate.impl.CriteriaImpl;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.util.Assert;
+import org.springside.modules.orm.IgnoreCase;
 import org.springside.modules.orm.Page;
 import org.springside.modules.orm.PropertyFilter;
 import org.springside.modules.orm.PropertyFilter.MatchType;
@@ -185,12 +188,12 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Page<T> findPage(final Page<T> page, final Criterion... criterions) {
 		Assert.notNull(page, "page不能为空");
-		
+
 		/**
 		 *	保存查询条件中对象别名，以免重复添加导致Hibernate报异常.
 		 */
 		Set<String> aliases = new HashSet<String>();
-		
+
 		Criteria c = createCriteria(criterions);
 
 		if (page.isAutoCount()) {
@@ -222,7 +225,7 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	 * 设置分页参数到Criteria对象,辅助函数.
 	 */
 	protected Criteria setPageParameterToCriteria(final Criteria c, final Page<T> page, final Set<String> aliases) {
-		
+
 		Assert.isTrue(page.getPageSize() > 0, "Page Size must larger than zero");
 
 		//hibernate的firstResult的序号从0开始
@@ -376,14 +379,14 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Page<T> findPage(final Page<T> page, final List<PropertyFilter> filters) {
 		Assert.notNull(page, "page不能为空");
-		
+
 		/**
 		 *	保存查询条件中对象别名，以免重复添加导致Hibernate报异常.
 		 */
 		Set<String> aliases = new HashSet<String>();
-		
+
 		DetachedCriteria dc = buildPropertyFilterDetachedCriteria(filters, aliases);
-		
+
 		Criteria c = dc.getExecutableCriteria(getSession());
 		if (page.isAutoCount()) {
 			long totalCount = countCriteriaResult(c);
@@ -406,7 +409,7 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 					String newAlias = alias.substring(0, 1).toUpperCase() + alias.substring(1);
 					Method method = ReflectionUtils.getAccessibleMethod(entityClass, "get" + newAlias);
 					EmbeddedId embeddedId = method.getAnnotation(EmbeddedId.class);
-					
+
 					// 忽略联合主键
 					if (embeddedId != null) {
 						continue;
@@ -421,7 +424,7 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 						String alias = StringUtils.substringBefore(filter.getPropertyName(), ".");
 						String newAlias = alias.substring(0, 1).toUpperCase() + alias.substring(1);
 						Method method = ReflectionUtils.getAccessibleMethod(entityClass, "get" + newAlias);
-						
+
 						// 忽略联合主键
 						EmbeddedId embeddedId = method.getAnnotation(EmbeddedId.class);
 						if (embeddedId != null) {
@@ -446,20 +449,24 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	protected Criterion buildCriterion(final String propertyName, final Object propertyValue, final MatchType matchType) {
 		Assert.hasText(propertyName, "propertyName不能为空");
 		Criterion criterion = null;
+		SimpleExpression se = null;
 		//根据MatchType构造criterion
 		switch (matchType) {
 		case EQ:
-			criterion = Restrictions.eq(propertyName, propertyValue);
+			se = Restrictions.eq(propertyName, propertyValue);
+			criterion = ignoreCase(se, propertyName, propertyValue);
 			break;
 		case NE:
 			criterion = Restrictions.ne(propertyName, propertyValue);
 			break;
 		case LIKE:
 			if (propertyValue instanceof String) {
-				criterion = Restrictions.like(propertyName, (String) propertyValue, MatchMode.ANYWHERE);
+				se = Restrictions.like(propertyName, (String) propertyValue, MatchMode.ANYWHERE);
+				criterion = ignoreCase(se, propertyName, propertyValue);
 			} else {
 				logger.warn("属性{}使用LIKE查询，为非字符型，实际类型为：{}，自动使用EQ查询", propertyName, propertyValue.getClass().getName());
-				criterion = Restrictions.eq(propertyName, propertyValue);
+				se = Restrictions.eq(propertyName, propertyValue);
+				criterion = ignoreCase(se, propertyName, propertyValue);
 			}
 			break;
 		case LE:
@@ -482,6 +489,27 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 			break;
 		}
 		return criterion;
+	}
+
+	/**
+	 * 根据注解IgnoreCase设置是否忽略大小写
+	 * @param propertyName
+	 * @param propertyValue
+	 * @return
+	 */
+	private SimpleExpression ignoreCase(SimpleExpression se, final String propertyName, final Object propertyValue) {
+		try {
+			String methodName = "get" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+			Method method = entityClass.getMethod(methodName);
+			if (method.isAnnotationPresent(IgnoreCase.class)) {
+				se = se.ignoreCase();
+			}
+		} catch (SecurityException e) {
+			throw new HibernateException(e);
+		} catch (NoSuchMethodException e) {
+			throw new HibernateException(e);
+		}
+		return se;
 	}
 
 	/**
