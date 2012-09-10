@@ -499,8 +499,17 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	 */
 	private SimpleExpression ignoreCase(SimpleExpression se, final String propertyName, final Object propertyValue) {
 		try {
-			String methodName = "get" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
-			Method method = entityClass.getMethod(methodName);
+			Class<?> clazz = entityClass;
+			String[] props = propertyName.split("\\.");
+			for (int i = 0; i < props.length - 1; i++) {
+				String methodName = "get" + props[i].substring(0, 1).toUpperCase() + props[i].substring(1);
+				Method method = clazz.getMethod(methodName);
+				if (method != null) {
+					clazz = method.getReturnType();
+				}
+			}
+			String methodName = "get" + props[props.length - 1].substring(0, 1).toUpperCase() + props[props.length - 1].substring(1);
+			Method method = clazz.getMethod(methodName);
 			if (method.isAnnotationPresent(IgnoreCase.class)) {
 				se = se.ignoreCase();
 			}
