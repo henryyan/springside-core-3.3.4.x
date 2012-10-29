@@ -114,6 +114,9 @@ public class Page<T> {
 	 * 获得排序字段,无默认值. 多个排序字段时用','分隔.
 	 */
 	public String getOrderBy() {
+		if (StringUtils.isBlank(orderBy)) {
+			return orderBy;
+		}
 		String[] split = orderBy.split(" ");
 		return split.length == 1 ? orderBy : split[0];
 	}
