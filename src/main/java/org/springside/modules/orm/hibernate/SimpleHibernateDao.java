@@ -114,10 +114,12 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
 	/**
 	 * 按id删除对象.
 	 */
-	public void delete(final PK id) {
+	public int delete(final PK id) {
 		Assert.notNull(id, "id不能为空");
-		delete(get(id));
+		String deleteHql = "delete from " + entityClass.getSimpleName() + " where id = ?";
+		int executeUpdate = getSession().createQuery(deleteHql).setParameter(0, id).executeUpdate();
 		logger.debug("delete entity {},id is {}", entityClass.getSimpleName(), id);
+		return executeUpdate;
 	}
 
 	/**
