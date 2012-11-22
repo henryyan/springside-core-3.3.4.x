@@ -39,10 +39,12 @@ public class Page<T> {
 	//-- jqGrid参数 --//
 	protected String search;
 	protected GridFilter filters = new GridFilter();
+	protected Map<String, ?> userdata = new HashMap<String, Object>();
 
 	//-- 返回结果 --//
 	protected List<T> result = Lists.newArrayList();
 	protected long totalCount = -1;
+
 	// 附加信息
 	protected Map<String, Object> attachValues = new HashMap<String, Object>();
 
@@ -312,6 +314,14 @@ public class Page<T> {
 
 	public void setAttachValues(Map<String, Object> attachValues) {
 		this.attachValues = attachValues;
+	}
+
+	public Map<String, ?> getUserdata() {
+		return userdata;
+	}
+
+	public void setUserdata(Map<String, ?> userdata) {
+		this.userdata = userdata;
 	}
 
 }
