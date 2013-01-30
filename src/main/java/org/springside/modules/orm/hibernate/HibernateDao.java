@@ -414,8 +414,10 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 					if (embeddedId != null) {
 						continue;
 					}
-					dc.createAlias(alias, alias, CriteriaSpecification.LEFT_JOIN); //默认用left join
-					aliases.add(alias);
+					if (!aliases.contains(alias)) {
+						dc.createAlias(alias, alias, CriteriaSpecification.LEFT_JOIN); //默认用left join
+						aliases.add(alias);
+					}
 				}
 			} else {
 				//含有or的情况
@@ -430,8 +432,10 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 						if (embeddedId != null) {
 							continue;
 						}
-						dc.createAlias(alias, alias, CriteriaSpecification.LEFT_JOIN);
-						aliases.add(alias);
+						if (!aliases.contains(alias)) {
+							dc.createAlias(alias, alias, CriteriaSpecification.LEFT_JOIN);
+							aliases.add(alias);
+						}
 					}
 				}
 			}
@@ -508,7 +512,8 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 					clazz = method.getReturnType();
 				}
 			}
-			String methodName = "get" + props[props.length - 1].substring(0, 1).toUpperCase() + props[props.length - 1].substring(1);
+			String methodName = "get" + props[props.length - 1].substring(0, 1).toUpperCase()
+					+ props[props.length - 1].substring(1);
 			Method method = clazz.getMethod(methodName);
 			if (method.isAnnotationPresent(IgnoreCase.class)) {
 				se = se.ignoreCase();
