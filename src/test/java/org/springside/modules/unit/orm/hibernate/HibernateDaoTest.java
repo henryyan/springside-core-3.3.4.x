@@ -132,7 +132,7 @@ public class HibernateDaoTest extends SpringTxTestCase {
 	}
 
 	@Test
-	public void findByFilters() {
+	public void findByFilters() throws Exception {
 		List<PropertyFilter> filters;
 		//EQ filter
 		PropertyFilter eqFilter = new PropertyFilter("EQS_loginName", "admin");

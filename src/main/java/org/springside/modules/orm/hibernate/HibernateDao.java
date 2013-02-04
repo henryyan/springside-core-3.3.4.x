@@ -377,7 +377,7 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 	 * 添加了关联查询和关联排序功能 add by henryyan.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Page<T> findPage(final Page<T> page, final List<PropertyFilter> filters) {
+	public Page<T> findPage(final Page<T> page, final List<PropertyFilter> filters) throws Exception {
 		Assert.notNull(page, "page不能为空");
 
 		/**
