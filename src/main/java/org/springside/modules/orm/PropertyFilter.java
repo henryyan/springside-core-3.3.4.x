@@ -43,8 +43,7 @@ public class PropertyFilter {
 
 	/** 属性数据类型. */
 	public enum PropertyType {
-		S(String.class), I(Integer.class), L(Long.class), F(Float.class), N(Double.class), D(Date.class), B(
-				Boolean.class);
+		S(String.class), I(Integer.class), L(Long.class), F(Float.class), N(Double.class), D(Date.class), B(Boolean.class);
 
 		private Class<?> clazz;
 
@@ -73,7 +72,7 @@ public class PropertyFilter {
 	 * @param value 待比较的值.
 	 */
 	public PropertyFilter(final String filterName, final String value) {
-		
+
 		String firstPart = StringUtils.substringBefore(filterName, "_");
 		String matchTypeCode = StringUtils.substring(firstPart, 0, firstPart.length() - 1);
 		String propertyTypeCode = StringUtils.substring(firstPart, firstPart.length() - 1, firstPart.length());
@@ -96,7 +95,7 @@ public class PropertyFilter {
 		propertyNames = propertyNameStr.split(PropertyFilter.OR_SEPARATOR);
 
 		this.originValue = value;
-		
+
 		if (matchType.equals(MatchType.IN) || matchType.equals(MatchType.NN)) {
 			this.matchValue = null;
 		} else {
@@ -198,7 +197,7 @@ public class PropertyFilter {
 	public boolean hasMultiProperties() {
 		return (propertyNames.length > 1);
 	}
-	
+
 	/**
 	 * 根据MatchType获取sql比较符号
 	 */
@@ -214,4 +213,25 @@ public class PropertyFilter {
 		types.put(MatchType.NN, "is not null");
 		return types.get(this.getMatchType());
 	}
+
+	public void setMatchType(MatchType matchType) {
+		this.matchType = matchType;
+	}
+
+	public void setMatchValue(Object matchValue) {
+		this.matchValue = matchValue;
+	}
+
+	public void setOriginValue(String originValue) {
+		this.originValue = originValue;
+	}
+
+	public void setPropertyClass(Class<?> propertyClass) {
+		this.propertyClass = propertyClass;
+	}
+
+	public void setPropertyNames(String[] propertyNames) {
+		this.propertyNames = propertyNames;
+	}
+
 }
