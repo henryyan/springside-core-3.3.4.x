@@ -22,12 +22,12 @@
 		<repository>
 			<id>nexus</id>
 			<name>Team Nexus Release Repository</name>
-			<url>http://runchain.gicp.net:8081/nexus/content/repositories/releases</url>
+			<url>http://runchain.3322.org:8081/nexus/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
 			<id>nexus</id>
 			<name>Team Nexus Snapshot Repository</name>
-			<url>http://runchain.gicp.net:8081/nexus/content/repositories/snapshots</url>
+			<url>http://runchain.3322.org:8081/nexus/content/repositories/snapshots</url>
 			<uniqueVersion>false</uniqueVersion>
 		</snapshotRepository>
 	</distributionManagement>
