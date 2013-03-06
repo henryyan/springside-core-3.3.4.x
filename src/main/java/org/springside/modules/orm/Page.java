@@ -39,7 +39,7 @@ public class Page<T> {
 	//-- jqGrid参数 --//
 	protected String search;
 	protected GridFilter filters = new GridFilter();
-	protected Map<String, ?> userdata = new HashMap<String, Object>();
+	protected Map<String, Object> userdata = new HashMap<String, Object>();
 
 	//-- 返回结果 --//
 	protected List<T> result = Lists.newArrayList();
@@ -316,11 +316,11 @@ public class Page<T> {
 		this.attachValues = attachValues;
 	}
 
-	public Map<String, ?> getUserdata() {
+	public Map<String, Object> getUserdata() {
 		return userdata;
 	}
 
-	public void setUserdata(Map<String, ?> userdata) {
+	public void setUserdata(Map<String, Object> userdata) {
 		this.userdata = userdata;
 	}
 
