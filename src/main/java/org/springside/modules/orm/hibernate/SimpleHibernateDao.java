@@ -172,7 +172,12 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
 	public T findUniqueBy(final String propertyName, final Object value) {
 		Assert.hasText(propertyName, "propertyName不能为空");
 		Criterion criterion = Restrictions.eq(propertyName, value);
-		return (T) createCriteria(criterion).uniqueResult();
+		Criteria criteria = createCriteria(criterion);
+		String[] split = propertyName.split("\\.");
+		if (split.length == 2) {
+			criteria.createAlias(split[0], split[0], CriteriaSpecification.LEFT_JOIN);
+		}
+		return (T) criteria.uniqueResult();
 	}
 
 	/**
