@@ -234,9 +234,6 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 
 		if (page.isOrderBySetted()) {
 			String[] orderByArray = StringUtils.split(page.getOrderBy(), ',');
-			String[] orderArray = StringUtils.split(page.getOrder(), ',');
-
-			Assert.isTrue(orderByArray.length == orderArray.length, "分页多重排序参数中,排序字段与排序方向的个数不相等");
 
 			for (int i = 0; i < orderByArray.length; i++) {
 				if (orderByArray[i].contains(".")) {
@@ -246,10 +243,15 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 						aliases.add(alias);
 					}
 				}
-				if (Page.ASC.equals(orderArray[i])) {
-					c.addOrder(Order.asc(orderByArray[i]));
+				String[] split = StringUtils.split(orderByArray[i]);
+				if (split.length == 1) {
+					c.addOrder(Order.desc(split[0]));
 				} else {
-					c.addOrder(Order.desc(orderByArray[i]));
+					if (split[1].equals(Page.ASC)) {
+						c.addOrder(Order.asc(split[0]));
+					} else {
+						c.addOrder(Order.desc(split[0]));
+					}
 				}
 			}
 		}
@@ -485,11 +487,14 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 		case GT:
 			criterion = Restrictions.gt(propertyName, propertyValue);
 			break;
-		case IN:
+		case ISN:
 			criterion = Restrictions.isNull(propertyName);
 			break;
 		case NN:
 			criterion = Restrictions.isNotNull(propertyName);
+			break;
+		case IN:
+			criterion = Restrictions.in(propertyName, (Object[]) propertyValue);
 			break;
 		}
 		return criterion;
