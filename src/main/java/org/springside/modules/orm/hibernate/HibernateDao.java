@@ -487,9 +487,6 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 		case GT:
 			criterion = Restrictions.gt(propertyName, propertyValue);
 			break;
-		case ISN:
-			criterion = Restrictions.isNull(propertyName);
-			break;
 		case NN:
 			criterion = Restrictions.isNotNull(propertyName);
 			break;
