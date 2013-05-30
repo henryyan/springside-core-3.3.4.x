@@ -38,7 +38,7 @@ public class PropertyFilter {
 	 * IN: is null 
 	 */
 	public enum MatchType {
-		EQ, NE, LIKE, LT, GT, LE, GE, NN, IN;
+		EQ, NE, LIKE, LLIKE, RLIKE, LT, GT, LE, GE, NN, IN;
 	}
 
 	/** 属性数据类型. */
