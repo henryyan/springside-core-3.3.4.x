@@ -10,6 +10,8 @@ package org.springside.modules.orm.hibernate;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -512,6 +514,13 @@ public class HibernateDao<T, PK extends Serializable> extends SimpleHibernateDao
 			break;
 		case IN:
 			criterion = Restrictions.in(propertyName, (Object[]) propertyValue);
+			break;
+		case BTD:
+			Date dateValue = (Date) propertyValue;
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(dateValue);
+			calendar.add(Calendar.DAY_OF_MONTH, 1);
+			criterion = Restrictions.and(Restrictions.ge(propertyName, propertyValue), Restrictions.le(propertyName, calendar.getTime()));
 			break;
 		}
 		return criterion;
