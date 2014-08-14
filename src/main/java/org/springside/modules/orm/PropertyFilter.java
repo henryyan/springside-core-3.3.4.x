@@ -43,7 +43,8 @@ public class PropertyFilter {
 
 	/** 属性数据类型. */
 	public enum PropertyType {
-		S(String.class), I(Integer.class), L(Long.class), F(Float.class), N(Double.class), D(Date.class), B(Boolean.class);
+		S(String.class), I(Integer.class), L(Long.class), F(Float.class), N(Double.class),
+        D(Date.class), B(Boolean.class), W(String.class);
 
 		private Class<?> clazz;
 
@@ -59,6 +60,7 @@ public class PropertyFilter {
 	private MatchType matchType = null;
 	private Object matchValue = null;
 	private String originValue = null;
+    private String propertyTypeCode = null;
 
 	private Class<?> propertyClass = null;
 	private String[] propertyNames = null;
@@ -75,7 +77,7 @@ public class PropertyFilter {
 
 		String firstPart = StringUtils.substringBefore(filterName, "_");
 		String matchTypeCode = StringUtils.substring(firstPart, 0, firstPart.length() - 1);
-		String propertyTypeCode = StringUtils.substring(firstPart, firstPart.length() - 1, firstPart.length());
+		this.propertyTypeCode = StringUtils.substring(firstPart, firstPart.length() - 1, firstPart.length());
 
 		try {
 			matchType = Enum.valueOf(MatchType.class, matchTypeCode);
@@ -137,8 +139,11 @@ public class PropertyFilter {
 				e.printStackTrace();
 			}
 
+            String firstPart = StringUtils.substringBefore(filterName, "_");
+            String matchTypeCode = StringUtils.substring(firstPart, 0, firstPart.length() - 1);
+
 			//如果value值为空,则忽略此filter.
-			if (StringUtils.isNotBlank(value)) {
+			if (matchTypeCode.equals("IN") || StringUtils.isNotBlank(value)) {
 				PropertyFilter filter = new PropertyFilter(filterName, value);
 				filterList.add(filter);
 			}
@@ -234,4 +239,11 @@ public class PropertyFilter {
 		this.propertyNames = propertyNames;
 	}
 
+    public String getPropertyTypeCode() {
+        return propertyTypeCode;
+    }
+
+    public void setPropertyTypeCode(String propertyTypeCode) {
+        this.propertyTypeCode = propertyTypeCode;
+    }
 }
